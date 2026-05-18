@@ -1,0 +1,4 @@
+[
+  { "fileName": "Light.png", "isPrimary": true, "isForLight": true },
+  { "fileName": "Dark.png", "isPrimary": false, "isForDark": true }
+]
