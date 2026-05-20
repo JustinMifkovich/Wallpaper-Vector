@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  filter: invert(1) hue-rotate(180deg);
+}
