@@ -1,2 +1,36 @@
 * { margin: 0; padding: 0; }
-body { overflow: hidden; background: #000; width: 100vw; height: 100vh; }
+body { overflow: hidden; width: 100vw; height: 100vh; background: #fff; }
+
+:root {
+  --panel-bg:           rgba(255, 255, 255, 0.40);
+  --panel-border:       rgba(0, 0, 0, 0.12);
+  --panel-text:         rgba(0, 0, 0, 0.88);
+  --panel-subtext:      rgba(0, 0, 0, 0.45);
+  --panel-divider:      rgba(0, 0, 0, 0.07);
+  --panel-hover:        rgba(0, 0, 0, 0.03);
+  --panel-header:       rgba(0, 0, 0, 0.50);
+  --error-bg:           rgba(200, 40, 40, 0.10);
+  --error-border:       rgba(200, 40, 40, 0.25);
+  --error-text:         #7a1010;
+  --spinner-track:      rgba(0, 0, 0, 0.15);
+  --spinner-head:       rgba(0, 0, 0, 0.80);
+}
+
+@media (prefers-color-scheme: dark) {
+  body { background: #000; }
+
+  :root {
+    --panel-bg:         rgba(0, 0, 0, 0.40);
+    --panel-border:     rgba(255, 255, 255, 0.14);
+    --panel-text:       rgba(255, 255, 255, 0.95);
+    --panel-subtext:    rgba(255, 255, 255, 0.50);
+    --panel-divider:    rgba(255, 255, 255, 0.07);
+    --panel-hover:      rgba(255, 255, 255, 0.05);
+    --panel-header:     rgba(255, 255, 255, 0.55);
+    --error-bg:         rgba(255, 80, 80, 0.20);
+    --error-border:     rgba(255, 80, 80, 0.35);
+    --error-text:       #ffb3b3;
+    --spinner-track:    rgba(255, 255, 255, 0.20);
+    --spinner-head:     #fff;
+  }
+}
