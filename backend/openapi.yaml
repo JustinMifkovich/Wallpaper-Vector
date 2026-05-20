@@ -1,0 +1,96 @@
+openapi: 3.0.3
+info:
+  title: WallpaperKubePanel API
+  version: 1.0.0
+  description: Serves Kubernetes pod status to the Angular wallpaper dashboard.
+
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /api/pods:
+    get:
+      summary: List all pods across all namespaces
+      operationId: getPods
+      responses:
+        '200':
+          description: Pod list returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PodListResponse'
+        '503':
+          description: Kubernetes cluster unreachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    PodInfo:
+      type: object
+      required: [name, namespace, status, ready, restarts, node]
+      properties:
+        name:
+          type: string
+          example: my-app-6d9f4b-xkz2p
+        namespace:
+          type: string
+          example: default
+        status:
+          type: string
+          example: Running
+          description: Kubernetes pod phase (Running, Pending, Failed, Succeeded, Unknown)
+        ready:
+          type: string
+          example: "2/3"
+          description: Ready containers out of total (e.g. "2/3")
+        restarts:
+          type: integer
+          example: 0
+          description: Total restart count across all containers
+        node:
+          type: string
+          example: node-1
+
+    PodListResponse:
+      type: object
+      required: [pods, fetched_at]
+      properties:
+        pods:
+          type: array
+          items:
+            $ref: '#/components/schemas/PodInfo'
+        fetched_at:
+          type: string
+          format: date-time
+          example: "2026-05-20T18:00:00Z"
+
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: "list pods: dial tcp: connection refused"

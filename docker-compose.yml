@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      - KUBECONFIG=/kubeconfig
+    volumes:
+      - ${HOME}/.kube/config:/kubeconfig:ro
+    restart: unless-stopped
+
+  frontend:
+    build: .
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

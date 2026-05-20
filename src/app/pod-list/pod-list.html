@@ -1,0 +1,42 @@
+@if (frame$ | async; as frame) {
+  <div class="panel">
+    @if (frame.clusterStatus === 'unreachable') {
+      <div class="error-banner" [class.error-banner--muted]="frame.retryUnit === 'minutes'">
+        Cluster unreachable &mdash; retrying in {{ countdownDisplay$ | async }}
+      </div>
+    }
+
+    @if (frame.namespaces.length > 0) {
+      <table class="pod-table">
+        <thead>
+          <tr>
+            <th>Namespace</th>
+            <th>Status</th>
+            <th>Ready</th>
+            <th>Restarts</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ns of frame.namespaces; track ns.namespace) {
+            <tr>
+              <td class="ns-name">{{ ns.namespace }}</td>
+              <td>
+                <span class="badge badge--{{ ns.status | lowercase }}">
+                  {{ ns.status }}
+                </span>
+              </td>
+              <td>{{ ns.ready }}</td>
+              <td>{{ ns.restarts }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else if (frame.clusterStatus === 'reachable') {
+      <p class="empty">No pods found.</p>
+    }
+  </div>
+} @else {
+  <div class="panel panel--loading">
+    <span class="spinner"></span>
+  </div>
+}
