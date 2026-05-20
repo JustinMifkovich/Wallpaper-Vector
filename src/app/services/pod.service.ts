@@ -128,12 +128,8 @@ export class PodService {
     );
   }
 
-  // Emit null (spinner) then fetch; on result, emit the frame then schedule the next poll.
   private pollLoop(): Observable<PollFrame | null> {
-    return concat(
-      of(null as PollFrame | null),
-      this.fetchFrame().pipe(switchMap(frame => this.afterFetch(frame)))
-    );
+    return this.fetchFrame().pipe(switchMap(frame => this.afterFetch(frame)));
   }
 
   // Emit the frame, wait nextPollMs, then start another pollLoop.
