@@ -59,17 +59,20 @@ export class PodListComponent {
   private readonly podService = inject(PodService);
 
   readonly frame$ = this.podService.pods$.pipe(
-    map((frame): NamespaceFrame => ({
-      ...frame,
-      namespaces: groupByNamespace(frame.pods),
-    }))
+    map((frame): NamespaceFrame | null =>
+      frame ? { ...frame, namespaces: groupByNamespace(frame.pods) } : null
+    )
   );
 
   readonly countdownDisplay$ = combineLatest([this.frame$, this.podService.countdown$]).pipe(
     map(([frame, seconds]) =>
-      frame.retryUnit === 'minutes'
+      frame?.retryUnit === 'minutes'
         ? `${Math.ceil(seconds / 60)}m`
         : `${seconds}s`
     )
   );
+
+  reconnect(): void {
+    this.podService.reconnect();
+  }
 }

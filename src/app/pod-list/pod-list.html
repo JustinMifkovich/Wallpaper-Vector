@@ -1,7 +1,7 @@
 @if (frame$ | async; as frame) {
   <div class="panel">
     @if (frame.clusterStatus === 'unreachable') {
-      <div class="error-banner" [class.error-banner--muted]="frame.retryUnit === 'minutes'">
+      <div class="error-banner" [class.error-banner--muted]="frame.retryUnit === 'minutes'" (click)="reconnect()">
         Cluster unreachable &mdash; retrying in {{ countdownDisplay$ | async }}
       </div>
     }

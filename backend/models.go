@@ -21,3 +21,8 @@ type HealthResponse struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
+type StateResponse struct {
+	ConsecutiveFailures int    `json:"consecutiveFailures"`
+	NextPollAt          string `json:"nextPollAt"`
+}
