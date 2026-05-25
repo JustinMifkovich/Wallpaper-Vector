@@ -59,12 +59,14 @@ export class PodService {
 
   readonly countdown$: Observable<number> = this.pods$.pipe(
     filter((frame): frame is PollFrame => frame !== null),
-    switchMap(frame =>
-      timer(0, 1000).pipe(
-        map(tick => Math.max(0, Math.round((frame.nextPollMs - tick * 1000) / 1000))),
+    switchMap(frame => {
+      // When showing minutes, tick every 60 s instead of every 1 s — 60× fewer timer firings.
+      const tickMs = frame.retryUnit === 'minutes' ? 60_000 : 1_000;
+      return timer(0, tickMs).pipe(
+        map(tick => Math.max(0, Math.round((frame.nextPollMs - tick * tickMs) / 1000))),
         takeWhile(s => s > 0, true)
-      )
-    )
+      );
+    })
   );
 
   reconnect(): void {

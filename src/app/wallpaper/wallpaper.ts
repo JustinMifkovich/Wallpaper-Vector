@@ -125,14 +125,7 @@ const FS_SOURCE = `
     float pinkPulse    = pow(max(0.0, sin(accentNoise2 * 6.28 + 2.1)), 2.5);
     float greenPulse   = pow(max(0.0, sin(accentNoise3 * 6.28 + 4.2)), 2.5);
 
-    vec2 caUV = uv * 2.0 - 1.0;
-    float caStr = length(caUV) * 0.04;
-    vec2 caDir = normalize(caUV + vec2(0.0001)) * caStr;
-
-    vec3 colR = getColor(wtuv + caDir, yellowPulse, pinkPulse, greenPulse);
-    vec3 colG = getColor(wtuv,         yellowPulse, pinkPulse, greenPulse);
-    vec3 colB = getColor(wtuv - caDir, yellowPulse, pinkPulse, greenPulse);
-    vec3 base = vec3(colR.r, colG.g, colB.b);
+    vec3 base = getColor(wtuv, yellowPulse, pinkPulse, greenPulse);
 
     vec2 vignUV = uv * 2.0 - 1.0;
     float vign = 1.0 - dot(vignUV, vignUV) * 0.15;
@@ -154,8 +147,12 @@ export class WallpaperComponent implements AfterViewInit, OnDestroy {
   private animHandle: number | null = null;
   private onBattery = false;
   private startTime = 0;
+  private lastFrameTime = 0;
   private uRes!: WebGLUniformLocation;
   private uTime!: WebGLUniformLocation;
+
+  private static readonly TARGET_FPS = 24;
+  private static readonly FRAME_INTERVAL_MS = 1000 / WallpaperComponent.TARGET_FPS;
 
   private readonly onResize = () => this.resize();
   private readonly onVisibility = () => document.hidden ? this.stopAnim() : this.startAnim();
@@ -171,6 +168,7 @@ export class WallpaperComponent implements AfterViewInit, OnDestroy {
 
     this.setupWebGL();
     this.startTime = performance.now();
+    this.lastFrameTime = 0;
 
     window.addEventListener('resize', this.onResize);
     this.resize();
@@ -231,18 +229,21 @@ export class WallpaperComponent implements AfterViewInit, OnDestroy {
 
   private resize(): void {
     const canvas = this.canvasRef.nativeElement;
-    canvas.width = Math.floor(window.innerWidth / 2);
-    canvas.height = Math.floor(window.innerHeight / 2);
+    canvas.width = Math.floor(window.innerWidth / 3);
+    canvas.height = Math.floor(window.innerHeight / 3);
     this.gl.viewport(0, 0, canvas.width, canvas.height);
   }
 
-  private render = (): void => {
-    const t = (performance.now() - this.startTime) / 1000;
+  private render = (timestamp: DOMHighResTimeStamp): void => {
+    this.animHandle = requestAnimationFrame(this.render);
+    if (timestamp - this.lastFrameTime < WallpaperComponent.FRAME_INTERVAL_MS) return;
+    this.lastFrameTime = timestamp;
+
+    const t = (timestamp - this.startTime) / 1000;
     const canvas = this.canvasRef.nativeElement;
     this.gl.uniform2f(this.uRes, canvas.width, canvas.height);
     this.gl.uniform1f(this.uTime, t);
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-    this.animHandle = requestAnimationFrame(this.render);
   };
 
   private startAnim(): void {
