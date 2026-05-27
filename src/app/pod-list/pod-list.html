@@ -1,4 +1,5 @@
 @if (frame$ | async; as frame) {
+  @if (!(frame.clusterStatus === 'unreachable' && frame.retryUnit === 'minutes')) {
   <div class="panel">
     @if (frame.clusterStatus === 'unreachable') {
       <div class="error-banner" [class.error-banner--muted]="frame.retryUnit === 'minutes'" (click)="reconnect()">
@@ -35,6 +36,7 @@
       <p class="empty">No pods found.</p>
     }
   </div>
+  }
 } @else {
   <div class="panel panel--loading">
     <span class="spinner"></span>
