@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   Observable, Subject, of, concat, merge,
-  switchMap, delay, map, catchError, timer, takeWhile, shareReplay, filter,
+  switchMap, map, catchError, timer, takeWhile, shareReplay, filter,
 } from 'rxjs';
 
 export interface PodInfo {
@@ -17,11 +17,6 @@ export interface PodInfo {
 interface PodListResponse {
   pods: PodInfo[];
   fetched_at: string;
-}
-
-interface StateResponse {
-  consecutiveFailures: number;
-  nextPollAt: string;
 }
 
 export type ClusterStatus = 'reachable' | 'unreachable';
@@ -47,13 +42,12 @@ export class PodService {
   private readonly reconnectSubject$ = new Subject<void>();
 
   // null means "fetch in progress — show spinner"
+  // On both page load and manual reconnect: reset state and check immediately.
   readonly pods$: Observable<PollFrame | null> = merge(
-    of(false as const),
-    this.reconnectSubject$.pipe(map(() => true as const))
+    of(undefined as void),
+    this.reconnectSubject$
   ).pipe(
-    switchMap(isReconnect =>
-      isReconnect ? this.doReconnectAndPoll() : this.initFromStateAndPoll()
-    ),
+    switchMap(() => this.doReconnectAndPoll()),
     shareReplay(1)
   );
 
@@ -72,32 +66,6 @@ export class PodService {
   reconnect(): void {
     this.consecutiveFailures = 0;
     this.reconnectSubject$.next();
-  }
-
-  private initFromStateAndPoll(): Observable<PollFrame | null> {
-    return this.http.get<StateResponse>('/api/state').pipe(
-      catchError(() => of({ consecutiveFailures: 0, nextPollAt: new Date().toISOString() } as StateResponse)),
-      switchMap(state => {
-        this.consecutiveFailures = state.consecutiveFailures;
-        const remainingMs = Math.max(0, new Date(state.nextPollAt).getTime() - Date.now());
-
-        if (state.consecutiveFailures > 0 && remainingMs > 1000) {
-          const waitFrame: PollFrame = {
-            pods: [],
-            clusterStatus: 'unreachable',
-            fetchedAt: null,
-            nextPollMs: remainingMs,
-            retryUnit: remainingMs > 120_000 ? 'minutes' : 'seconds',
-          };
-          return concat(
-            of(waitFrame as PollFrame | null),
-            timer(remainingMs).pipe(switchMap(() => this.pollLoop()))
-          );
-        }
-
-        return timer(remainingMs).pipe(switchMap(() => this.pollLoop()));
-      })
-    );
   }
 
   // Reconnect: emits null immediately (spinner), then POST result, then normal poll loop.
